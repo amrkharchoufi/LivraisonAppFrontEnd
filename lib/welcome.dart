@@ -1,7 +1,5 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie2/Loginn.dart';
 
 class Welcome extends StatefulWidget {
   const Welcome({super.key});
@@ -71,7 +69,7 @@ class _WelcomeState extends State<Welcome> {
                     duration: Duration(milliseconds: 2000),
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(_sharedAxisRoute(Loginn()));
+                        Navigator.of(context).pushNamed("/Login");
                       },
                       child: PhysicalModel(
                         color: Colors.transparent,
@@ -124,19 +122,4 @@ class _WelcomeState extends State<Welcome> {
           ],
         ));
   }
-}
-
-PageRouteBuilder _sharedAxisRoute(Widget page) {
-  return PageRouteBuilder(
-    transitionDuration: Duration(milliseconds: 600),
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return SharedAxisTransition(
-        animation: animation,
-        secondaryAnimation: secondaryAnimation,
-        transitionType: SharedAxisTransitionType.horizontal,
-        child: child,
-      );
-    },
-  );
 }

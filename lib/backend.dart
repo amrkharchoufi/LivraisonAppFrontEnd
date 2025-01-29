@@ -8,51 +8,116 @@ import 'package:foodie2/modele/product.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For JSON encoding/decoding
 
-login(BuildContext context, String email, String passwd, String type) async {
+Future<void> login(BuildContext context, String email, String password) async {
+  late AwesomeDialog loadingDialog;
   try {
-    await FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: email, password: passwd);
-  } on FirebaseAuthException {
-    AwesomeDialog(
+    // Show loading dialog
+    loadingDialog = AwesomeDialog(
       context: context,
-      dialogType: DialogType.error,
-      animType: AnimType.rightSlide,
-      title: 'Sign in probleme',
-      desc: "E-mail or Password incorrect",
-      btnOkOnPress: () {},
-    ).show();
-    return;
-  }
+      dialogType: DialogType.noHeader,
+      animType: AnimType.bottomSlide,
+      body: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Signing in...'),
+          ],
+        ),
+      ),
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
+    )..show();
 
-  String userid = FirebaseAuth.instance.currentUser!.uid;
-  DocumentSnapshot<Map<String, dynamic>> user =
-      await FirebaseFirestore.instance.collection('Users').doc(userid).get();
-  String role = user.data()?["role"];
-  if (role != type) {
-    FirebaseAuth.instance.signOut();
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.error,
-      animType: AnimType.rightSlide,
-      title: 'user unfound',
-      desc: "wrong email or password",
-      btnOkOnPress: () {},
-    ).show();
-  } else {
-    if (type == "Livreur") {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => LivreurSpace()),
-        (Route<dynamic> route) => false,
-      );
-    } else {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => ClientSpace()),
-        (Route<dynamic> route) => false,
-      );
+    // Authenticate user
+    final UserCredential userCredential =
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Get user data
+    final String userId = userCredential.user!.uid;
+    final DocumentSnapshot<Map<String, dynamic>> userSnapshot =
+        await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+
+    // Handle user data
+    if (!userSnapshot.exists) {
+      loadingDialog.dismiss();
+      _showErrorDialog(context, 'User account not found');
+      await FirebaseAuth.instance.signOut();
+      return;
     }
+
+    final userData = userSnapshot.data();
+    final String role = userData?['role'] ?? '';
+
+    if (role.isEmpty) {
+      loadingDialog.dismiss();
+      _showErrorDialog(context, 'User role not defined');
+      await FirebaseAuth.instance.signOut();
+      return;
+    }
+
+    // Navigate based on role
+    loadingDialog.dismiss();
+    _navigateBasedOnRole(context, role);
+  } on FirebaseAuthException catch (e) {
+    loadingDialog.dismiss();
+    _handleAuthError(context, e);
+  } on FirebaseException catch (e) {
+    loadingDialog.dismiss();
+    _showErrorDialog(context, 'Database error: ${e.message}');
+  } catch (e) {
+    loadingDialog.dismiss();
+    _showErrorDialog(context, 'Unexpected error: ${e.toString()}');
   }
+}
+
+void _navigateBasedOnRole(BuildContext context, String role) {
+  final Widget route =
+      role == "Livreur" ? const LivreurSpace() : const ClientSpace();
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => route),
+    (Route<dynamic> route) => false,
+  );
+}
+
+void _handleAuthError(BuildContext context, FirebaseAuthException e) {
+  String message = 'Sign in failed';
+  switch (e.code) {
+    case 'invalid-email':
+      message = 'Invalid email format';
+      break;
+    case 'user-disabled':
+      message = 'This account has been disabled';
+      break;
+    case 'user-not-found':
+    case 'wrong-password':
+      message = 'Invalid email or password';
+      break;
+    case 'network-request-failed':
+      message = 'Network error. Please check your connection';
+      break;
+  }
+  _showErrorDialog(context, message);
+}
+
+void _showErrorDialog(BuildContext context, String message) {
+  if (!context.mounted) return;
+
+  AwesomeDialog(
+    context: context,
+    dialogType: DialogType.error,
+    animType: AnimType.rightSlide,
+    title: 'Sign In Problem',
+    desc: message,
+    btnOkOnPress: () {},
+    btnOkColor: Colors.red,
+  ).show();
 }
 
 Future<List<Product>> fetchProducts() async {
