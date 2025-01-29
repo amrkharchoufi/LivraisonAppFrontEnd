@@ -2,9 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie2/Client.dart';
 import 'package:foodie2/route.dart';
-import 'package:foodie2/welcome.dart';
 import 'package:foodie2/firebase_options.dart';
-import 'package:http/http.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.4"
+  animated_notch_bottom_bar:
+    dependency: "direct main"
+    description:
+      name: animated_notch_bottom_bar
+      sha256: adc389a39e7b015883bba22de57e691eb6445c98c055b2438d6593a7f68017fe
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   animations:
     dependency: "direct main"
     description:
@@ -97,14 +105,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.0"
-  convex_bottom_bar:
-    dependency: "direct main"
-    description:
-      name: convex_bottom_bar
-      sha256: ebf0f3deb1e8e99374d844fee7485d2980ec502dedfaad395c12118477933aef
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.0"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -365,14 +365,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  r_nav_n_sheet:
-    dependency: "direct main"
-    description:
-      name: r_nav_n_sheet
-      sha256: dff262ec319379d50dcff864340bafdd2989a417afd9492e82c872e605e0c06e
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   rive:
     dependency: transitive
     description:
@@ -389,6 +381,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.15"
+  salomon_bottom_bar:
+    dependency: "direct main"
+    description:
+      name: salomon_bottom_bar
+      sha256: e20abf2e449749432223a8b4e6647c212eef6c2b638e0ed8cc92eff9529c2b48
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.2"
   sky_engine:
     dependency: transitive
     description: flutter

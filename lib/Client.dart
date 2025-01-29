@@ -1,7 +1,10 @@
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'dart:math';
+
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foodie2/modele/product.dart';
+import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 List<Product> cart = [];
 
@@ -13,39 +16,101 @@ class ClientSpace extends StatefulWidget {
 }
 
 class _ClientSpaceState extends State<ClientSpace> {
-  int _currentIndex = 0;
-  final List<Widget> _pages = [Products(), Cart(), Delivery()];
+  final _pageController = PageController(initialPage: 0);
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+  /// Controller to handle bottom nav bar and also handles initial page
+  final NotchBottomBarController _controller =
+      NotchBottomBarController(index: 0);
+
+  int maxCount = 5;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    /// widget list
+    final List<Widget> bottomBarPages = [
+      const Products(),
+      const Cart(),
+      const Delivery(),
+    ];
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: _pages[_currentIndex],
-      bottomNavigationBar: ConvexAppBar(
-        style: TabStyle.fixedCircle, // The convex shape
-        backgroundColor: Colors.black, // Bottom bar color
-        activeColor: Colors.white, // Active icon color
-        color: Colors.white70, // Inactive icon color
-        items: [
-          TabItem(icon: Icons.search, title: ""),
-          TabItem(icon: Icons.favorite_border, title: ""),
-          TabItem(icon: FontAwesomeIcons.houseChimney, title: ""),
-          TabItem(icon: Icons.shopping_cart_outlined, title: ""),
-          TabItem(icon: Icons.person_outline, title: ""),
-        ],
-        initialActiveIndex: _currentIndex, // Default selected index
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: List.generate(
+            bottomBarPages.length, (index) => bottomBarPages[index]),
       ),
+      extendBody: true,
+      bottomNavigationBar: (bottomBarPages.length <= maxCount)
+          ? AnimatedNotchBottomBar(
+              /// Provide NotchBottomBarController
+              notchBottomBarController: _controller,
+              color: Colors.white,
+              showLabel: true,
+              textOverflow: TextOverflow.visible,
+              maxLine: 1,
+              shadowElevation: 5,
+              kBottomRadius: 28.0,
+
+              // notchShader: const SweepGradient(
+              //   startAngle: 0,
+              //   endAngle: pi / 2,
+              //   colors: [Colors.red, Colors.green, Colors.orange],
+              //   tileMode: TileMode.mirror,
+              // ).createShader(Rect.fromCircle(center: Offset.zero, radius: 8.0)),
+              notchColor: Colors.white,
+
+              /// restart app if you change removeMargins
+              removeMargins: false,
+              bottomBarWidth: double.infinity,
+              showShadow: true,
+              durationInMilliSeconds: 200,
+
+              itemLabelStyle: const TextStyle(fontSize: 10),
+
+              elevation: 1,
+              bottomBarItems: const [
+                BottomBarItem(
+                  inActiveItem: Icon(
+                    Icons.home_filled,
+                    color: Colors.blueGrey,
+                  ),
+                  activeItem: Icon(
+                    Icons.home_filled,
+                    color: Color.fromARGB(255, 220, 33, 78),
+                  ),
+                ),
+                BottomBarItem(
+                  inActiveItem: Icon(Icons.shopping_cart_outlined,
+                      color: Colors.blueGrey),
+                  activeItem: Icon(
+                    Icons.shopping_cart,
+                    color: Color.fromARGB(255, 220, 33, 78),
+                  ),
+                ),
+                BottomBarItem(
+                  inActiveItem: Icon(
+                    FontAwesomeIcons.box,
+                    color: Colors.blueGrey,
+                  ),
+                  activeItem: Icon(
+                    FontAwesomeIcons.boxOpen,
+                    color: Color.fromARGB(255, 220, 33, 78),
+                  ),
+                ),
+              ],
+              onTap: (index) {
+                _pageController.jumpToPage(index);
+              },
+              kIconSize: 20.0,
+            )
+          : null,
     );
   }
 }
@@ -68,6 +133,7 @@ class _ProductsState extends State<Products> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue,
       body: Text("data"),
     );
   }
@@ -119,8 +185,8 @@ class Delivery extends StatefulWidget {
 class _DeliveryState extends State<Delivery> {
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text("delivery"),
+    return const Scaffold(
+      body: Text("delivery"),
     );
   }
 }
