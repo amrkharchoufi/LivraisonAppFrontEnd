@@ -1,10 +1,8 @@
-import 'dart:math';
-
+import 'package:animate_do/animate_do.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foodie2/modele/product.dart';
-import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 List<Product> cart = [];
 
@@ -124,6 +122,8 @@ class Products extends StatefulWidget {
 
 class _ProductsState extends State<Products> {
   late Future<List<Product>> futureProducts;
+  TextEditingController food = TextEditingController();
+  List<String> categories = ["Pizza", "Burger", "Nugget", "Tacos"];
 
   @override
   void initState() {
@@ -133,8 +133,205 @@ class _ProductsState extends State<Products> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
-      body: Text("data"),
+      appBar: AppBar(
+        title: SizedBox(
+            width: 220,
+            height: 220,
+            child: Image.asset("asset/images/minilogo.png")),
+        centerTitle: true,
+        actions: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Color.fromARGB(150, 202, 24, 66),
+            child: Icon(
+              FontAwesomeIcons.user,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(
+            width: 10,
+          )
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40),
+        child: Column(
+          children: [
+            PhysicalModel(
+              color: Colors.transparent,
+              elevation: 7,
+              shadowColor: Colors.black,
+              borderRadius: BorderRadius.circular(30),
+              child: SizedBox(
+                width: 300,
+                height: 50,
+                child: TextFormField(
+                  controller: food,
+                  decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        borderSide: BorderSide.none),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.black54,
+                    ),
+                    hintText: "Search Your Favorite Food...",
+                    hintStyle: const TextStyle(
+                      color: Colors.black54,
+                      fontFamily: "Poppin",
+                    ),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            FadeInUp(
+              duration: Duration(milliseconds: 500),
+              child: Container(
+                clipBehavior: Clip.hardEdge,
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    color: Color.fromARGB(255, 202, 24, 66)),
+                child: Stack(
+                  children: [
+                    Positioned(
+                        right: 0,
+                        top: 0,
+                        child: SizedBox(
+                            width: 80,
+                            height: 80,
+                            child:
+                                Image.asset("asset/images/circlewhbig.png"))),
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "The Fastest\nFood Delivery",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontFamily: "Monsterrat",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 25),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "ORDER NOW",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                              width: 185,
+                              height: 185,
+                              child: Image.asset("asset/images/burger.png"))
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 30,
+            ),
+            FadeInRight(
+              duration: Duration(milliseconds: 700),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Categories",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Text("View All",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 202, 24, 66),
+                      ))
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (int i = 0; i < categories.length; i++) ...[
+                    FadeInUp(
+                      duration: Duration(milliseconds: (800 + (i * 200))),
+                      child: GestureDetector(
+                        onTap: () {
+                          print("object");
+                        },
+                        child: Column(
+                          children: [
+                            PhysicalModel(
+                              color: Colors.transparent,
+                              elevation: 7,
+                              shadowColor: Colors.black,
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10))),
+                                  width: 120,
+                                  height: 120,
+                                  child: Image.asset(
+                                      "asset/images/categorie/${categories[i]}cat.png")),
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              categories[i],
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 20,
+                    )
+                  ]
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 30,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

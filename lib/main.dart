@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie2/Client.dart';
 import 'package:foodie2/route.dart';
 import 'package:foodie2/firebase_options.dart';
+import 'package:foodie2/welcome.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +19,7 @@ class Foodie extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: routes,
-      home: ClientSpace(),
+      home: Welcome(),
       debugShowCheckedModeBanner: false,
     );
   }
