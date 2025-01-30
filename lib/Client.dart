@@ -2,7 +2,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:foodie2/backend.dart';
 import 'package:foodie2/modele/product.dart';
+import 'package:foodie2/widget/productcard.dart';
 
 List<Product> cart = [];
 
@@ -128,6 +130,7 @@ class _ProductsState extends State<Products> {
   @override
   void initState() {
     super.initState();
+    futureProducts = fetchProducts();
   }
 
   @override
@@ -153,183 +156,232 @@ class _ProductsState extends State<Products> {
           )
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40),
-        child: Column(
-          children: [
-            PhysicalModel(
-              color: Colors.transparent,
-              elevation: 7,
-              shadowColor: Colors.black,
-              borderRadius: BorderRadius.circular(30),
-              child: SizedBox(
-                width: 300,
-                height: 50,
-                child: TextFormField(
-                  controller: food,
-                  decoration: InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50),
-                        borderSide: BorderSide.none),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.black54,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40),
+          child: Column(
+            children: [
+              PhysicalModel(
+                color: Colors.transparent,
+                elevation: 7,
+                shadowColor: Colors.black,
+                borderRadius: BorderRadius.circular(30),
+                child: SizedBox(
+                  width: 300,
+                  height: 50,
+                  child: TextFormField(
+                    controller: food,
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide.none),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Colors.black54,
+                      ),
+                      hintText: "Search Your Favorite Food...",
+                      hintStyle: const TextStyle(
+                        color: Colors.black54,
+                        fontFamily: "Poppin",
+                      ),
                     ),
-                    hintText: "Search Your Favorite Food...",
-                    hintStyle: const TextStyle(
-                      color: Colors.black54,
-                      fontFamily: "Poppin",
-                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            FadeInUp(
-              duration: Duration(milliseconds: 500),
-              child: Container(
-                clipBehavior: Clip.hardEdge,
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                    color: Color.fromARGB(255, 202, 24, 66)),
-                child: Stack(
-                  children: [
-                    Positioned(
-                        right: 0,
-                        top: 0,
-                        child: SizedBox(
-                            width: 80,
-                            height: 80,
-                            child:
-                                Image.asset("asset/images/circlewhbig.png"))),
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "The Fastest\nFood Delivery",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: "Monsterrat",
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 25),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
+              SizedBox(
+                height: 20,
+              ),
+              FadeInUp(
+                duration: Duration(milliseconds: 500),
+                child: Container(
+                  clipBehavior: Clip.hardEdge,
+                  width: double.infinity,
+                  height: 200,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                      color: Color.fromARGB(255, 202, 24, 66)),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                          right: 0,
+                          top: 0,
+                          child: SizedBox(
+                              width: 80,
+                              height: 80,
+                              child:
+                                  Image.asset("asset/images/circlewhbig.png"))),
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "The Fastest\nFood Delivery",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: "Monsterrat",
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 25),
                                   ),
-                                  child: Text(
-                                    "ORDER NOW",
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                )
-                              ],
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "ORDER NOW",
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                              width: 185,
-                              height: 185,
-                              child: Image.asset("asset/images/burger.png"))
-                        ],
-                      ),
-                    )
+                            SizedBox(
+                                width: 185,
+                                height: 185,
+                                child: Image.asset("asset/images/burger.png"))
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              FadeInRight(
+                duration: Duration(milliseconds: 700),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Categories",
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    Text("View All",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color.fromARGB(255, 202, 24, 66),
+                        ))
                   ],
                 ),
               ),
-            ),
-            SizedBox(
-              height: 30,
-            ),
-            FadeInRight(
-              duration: Duration(milliseconds: 700),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Categories",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text("View All",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color.fromARGB(255, 202, 24, 66),
-                      ))
-                ],
+              SizedBox(
+                height: 20,
               ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (int i = 0; i < categories.length; i++) ...[
-                    FadeInUp(
-                      duration: Duration(milliseconds: (800 + (i * 200))),
-                      child: GestureDetector(
-                        onTap: () {
-                          print("object");
-                        },
-                        child: Column(
-                          children: [
-                            PhysicalModel(
-                              color: Colors.transparent,
-                              elevation: 7,
-                              shadowColor: Colors.black,
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                  clipBehavior: Clip.hardEdge,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10))),
-                                  width: 120,
-                                  height: 120,
-                                  child: Image.asset(
-                                      "asset/images/categorie/${categories[i]}cat.png")),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              categories[i],
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            )
-                          ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (int i = 0; i < categories.length; i++) ...[
+                      FadeInUp(
+                        duration: Duration(milliseconds: (800 + (i * 200))),
+                        child: GestureDetector(
+                          onTap: () {
+                            print("object");
+                          },
+                          child: Column(
+                            children: [
+                              PhysicalModel(
+                                color: Colors.transparent,
+                                elevation: 7,
+                                shadowColor: Colors.black,
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                    clipBehavior: Clip.hardEdge,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10))),
+                                    width: 120,
+                                    height: 120,
+                                    child: Image.asset(
+                                        "asset/images/categorie/${categories[i]}cat.png")),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                categories[i],
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
                         ),
                       ),
+                      SizedBox(
+                        width: 20,
+                      )
+                    ]
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              Row(
+                children: [
+                  Text(
+                    "Top Deals",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                    SizedBox(
-                      width: 20,
-                    )
-                  ]
+                  ),
                 ],
               ),
-            ),
-            SizedBox(
-              height: 30,
-            ),
-          ],
+              SizedBox(
+                height: 20,
+              ),
+              // Replace the existing Wrap widget with this:
+              FutureBuilder<List<Product>>(
+                future: futureProducts,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Text('No products found');
+                  } else {
+                    final products = snapshot.data!;
+                    return Wrap(
+                      // spacing: 20,
+                      runSpacing: 20,
+                      children: [
+                        for (final product in products)
+                          Productcard(
+                            onPressed: () {},
+                            nom: product.productName,
+                            price: product.price,
+                          ),
+                      ],
+                    );
+                  }
+                },
+              ),
+              SizedBox(
+                height: 500,
+              )
+            ],
+          ),
         ),
       ),
     );

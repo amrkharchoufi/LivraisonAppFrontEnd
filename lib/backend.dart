@@ -77,6 +77,27 @@ Future<void> login(BuildContext context, String email, String password) async {
   }
 }
 
+void checklogin(BuildContext context) {
+  String user = FirebaseAuth.instance.currentUser!.uid;
+  if (user.isNotEmpty) {
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(user)
+        .get()
+        .then((value) {
+      if (value.exists) {
+        final userData = value.data();
+        final String role = userData?['role'] ?? '';
+        if (role.isNotEmpty) {
+          _navigateBasedOnRole(context, role);
+        }
+      }
+    });
+  } else {
+    Navigator.of(context).pushNamed("/Login");
+  }
+}
+
 void _navigateBasedOnRole(BuildContext context, String role) {
   final Widget route =
       role == "Livreur" ? const LivreurSpace() : const ClientSpace();
