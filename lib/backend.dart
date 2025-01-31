@@ -1,11 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:math';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie2/Client.dart';
 import 'package:foodie2/Livreur.dart';
+import 'package:foodie2/modele/commande.dart';
 import 'package:foodie2/modele/product.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For JSON encoding/decoding
@@ -153,5 +156,65 @@ Future<List<Product>> fetchProducts() async {
   } else {
     print("Failed to load products: ${response.statusCode}");
     throw Exception("Failed to load products");
+  }
+}
+
+String generateRandomString(int length) {
+  const String chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  Random random = Random();
+
+  return List.generate(length, (index) => chars[random.nextInt(chars.length)])
+      .join();
+}
+
+Future<void> addCommande(BuildContext context, Commande commande) async {
+  final url = Uri.parse(
+      "http://10.0.2.2:8082/commandes"); // API URL for Android Emulator
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'idCmd': commande.idCmd,
+        'items': commande.Items.map((item) => item.toJson()).toList(),
+        'idClient': commande.idClient,
+        'idLivreur': commande.idLivreur,
+        'status': commande.status.toString().split('.').last,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'order added succesfully!',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green, // Change to match your theme
+          behavior: SnackBarBehavior.floating, // Makes it float like a toast
+          margin: EdgeInsets.all(16), // Adds space around
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // Rounded corners
+          ),
+          duration: Duration(seconds: 2), // Auto dismiss after 2 seconds
+        ),
+      );
+    } else {
+      throw Exception("Failed to add product: ${response.body}");
+    }
+  } catch (e) {
+    print("Error: $e");
   }
 }

@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foodie2/backend.dart';
+import 'package:foodie2/modele/commande.dart';
 import 'package:foodie2/modele/product.dart';
 import 'package:foodie2/widget/productcard.dart';
 import 'package:provider/provider.dart';
@@ -661,7 +664,23 @@ class _CartState extends State<Cart> {
                         FadeInUp(
                           duration: Duration(milliseconds: (500 + (i += 200))),
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              List<commandeItem> items = cartManager.items
+                                  .map((item) => commandeItem(
+                                        idProduit: item.product.id,
+                                        quantity: item.quantity,
+                                      ))
+                                  .toList();
+                              final commande = Commande(
+                                  idCmd: generateRandomString(10),
+                                  Items: items,
+                                  idClient: "AD314145",
+                                  idLivreur: "");
+                              addCommande(context, commande);
+                              setState(() {
+                                cartManager.clearCart();
+                              });
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 220, 33, 78),
                               shape: RoundedRectangleBorder(
