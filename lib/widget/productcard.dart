@@ -6,13 +6,15 @@ class Productcard extends StatelessWidget {
   final int reviews;
   final String nom;
   final double price;
+  final ImageProvider image;
   final VoidCallback onPressed;
 
   Productcard(
       {super.key,
       required this.nom,
       required this.price,
-      required this.onPressed})
+      required this.onPressed,
+      required this.image})
       : rating = (Random().nextDouble() * 2) + 3, // Random between 3.0-5.0
         reviews = Random().nextInt(951) + 50; // Random between 50-1000
 
@@ -37,8 +39,8 @@ class Productcard extends StatelessWidget {
                   height: 140,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    image: const DecorationImage(
-                      image: AssetImage("asset/images/products/pizzapep.jpg"),
+                    image: DecorationImage(
+                      image: image,
                       fit: BoxFit.cover,
                     ),
                   ),

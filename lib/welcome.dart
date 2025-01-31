@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:foodie2/backend.dart';
 
 class Welcome extends StatefulWidget {
   const Welcome({super.key});
@@ -69,7 +70,7 @@ class _WelcomeState extends State<Welcome> {
                     duration: Duration(milliseconds: 2000),
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).pushNamed("/Login");
+                        checklogin(context);
                       },
                       child: PhysicalModel(
                         color: Colors.transparent,
