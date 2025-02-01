@@ -10,6 +10,7 @@ import 'package:foodie2/Client.dart';
 import 'package:foodie2/Livreur.dart';
 import 'package:foodie2/modele/commande.dart';
 import 'package:foodie2/modele/product.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For JSON encoding/decoding
 
@@ -222,6 +223,36 @@ String generateRandomString(int length) {
 }
 
 Future<void> addCommande(BuildContext context, Commande commande) async {
+  late AwesomeDialog loadingDialog;
+  // Show loading dialog
+  loadingDialog = AwesomeDialog(
+    context: context,
+    dialogType: DialogType.noHeader,
+    animType: AnimType.bottomSlide,
+    body: Padding(
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          SizedBox(
+              width: 200,
+              height: 200,
+              child: Image.asset("asset/images/minilogo.png")),
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Making Order...'),
+        ],
+      ),
+    ),
+    dismissOnTouchOutside: false,
+    dismissOnBackKeyPress: false,
+  )..show();
+
+  Position location = await getCurrentLocation(context);
+
+  updateClientLocation(location.longitude, location.latitude);
+
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
   final url = Uri.parse(
       "http://10.0.2.2:8082/commandes"); // API URL for Android Emulator
 
@@ -234,13 +265,14 @@ Future<void> addCommande(BuildContext context, Commande commande) async {
       body: jsonEncode({
         'idCmd': commande.idCmd,
         'items': commande.Items.map((item) => item.toJson()).toList(),
-        'idClient': commande.idClient,
+        'idClient': userId,
         'idLivreur': commande.idLivreur,
         'status': commande.status.toString().split('.').last,
       }),
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {
+      loadingDialog.dismiss();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -290,6 +322,75 @@ Future<void> addClient(BuildContext context, String id, String name,
         'adress': adress,
         'telephone': phone,
       }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+    } else {
+      throw Exception("Failed to add client: ${response.body}");
+    }
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
+Future<Position> getCurrentLocation(BuildContext context) async {
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    await Geolocator.openLocationSettings();
+    throw Exception('Location services are disabled');
+  }
+
+  LocationPermission permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.deniedForever) {
+    showLocationPermissionDialog(context);
+    throw Exception('Location permissions permanently denied');
+  }
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission != LocationPermission.whileInUse &&
+        permission != LocationPermission.always) {
+      throw Exception('Location permissions denied');
+    }
+  }
+
+  return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.best, timeLimit: Duration(seconds: 15));
+}
+
+void showLocationPermissionDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title: Text("Location Permission Required"),
+      content: Text("Please enable location permissions in app settings"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () => Geolocator.openAppSettings(),
+          child: Text("Open Settings"),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> updateClientLocation(double long, double lat) async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  final url = Uri.parse(
+      "http://10.0.2.2:8081/clients/$userId/location"); // API URL for Android Emulator
+
+  try {
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({"longtitude": long, "latitude": lat}),
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {

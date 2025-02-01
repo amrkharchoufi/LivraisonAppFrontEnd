@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie2/backend.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Welcome extends StatefulWidget {
   const Welcome({super.key});
@@ -10,6 +11,38 @@ class Welcome extends StatefulWidget {
 }
 
 class _WelcomeState extends State<Welcome> {
+  @override
+  void initState() {
+    super.initState();
+    _verifyLocationAccess();
+  }
+
+  Future<void> _verifyLocationAccess() async {
+    try {
+      final position = await Geolocator.getCurrentPosition();
+      // Location access granted, you can use position if needed
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Location Required'),
+          content:
+              const Text('This app needs location access to function properly'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Geolocator.openAppSettings(),
+              child: const Text('Open Settings'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -182,8 +182,8 @@ class _ProductsState extends State<Products> {
         centerTitle: true,
         actions: [
           CircleAvatar(
-            radius: 30,
-            backgroundColor: Color.fromARGB(150, 202, 24, 66),
+            radius: 35,
+            backgroundColor: Color.fromARGB(188, 202, 24, 66),
             child: Icon(
               FontAwesomeIcons.user,
               color: Colors.white,
@@ -672,7 +672,7 @@ class _CartState extends State<Cart> {
                               final commande = Commande(
                                   idCmd: generateRandomString(10),
                                   Items: items,
-                                  idClient: "AD314145",
+                                  idClient: "",
                                   idLivreur: "");
                               addCommande(context, commande);
                               setState(() {
