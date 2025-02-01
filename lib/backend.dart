@@ -101,6 +101,59 @@ void checklogin(BuildContext context) {
   }
 }
 
+Future<void> signUp(BuildContext context, String email, String password,
+    String name, String city, String phone, String adress) async {
+  late AwesomeDialog loadingDialog;
+  try {
+    // Show loading dialog
+    loadingDialog = AwesomeDialog(
+      context: context,
+      dialogType: DialogType.noHeader,
+      animType: AnimType.bottomSlide,
+      body: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Signing in...'),
+          ],
+        ),
+      ),
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
+    )..show();
+
+    // Authenticate user
+    final UserCredential userCredential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    final String userId = userCredential.user!.uid;
+
+    FirebaseFirestore.instance
+        .collection("Users")
+        .doc(userId)
+        .set({"role": "Client"});
+
+    addClient(context, userId, name, city, phone, adress);
+
+    // Navigate based on role
+    loadingDialog.dismiss();
+    _navigateBasedOnRole(context, "Client");
+  } on FirebaseAuthException catch (e) {
+    loadingDialog.dismiss();
+    _handleAuthError(context, e);
+  } on FirebaseException catch (e) {
+    loadingDialog.dismiss();
+    _showErrorDialog(context, 'Database error: ${e.message}');
+  } catch (e) {
+    loadingDialog.dismiss();
+    _showErrorDialog(context, 'Unexpected error: ${e.toString()}');
+  }
+}
+
 void _navigateBasedOnRole(BuildContext context, String role) {
   final Widget route =
       role == "Livreur" ? const LivreurSpace() : const ClientSpace();
@@ -213,6 +266,35 @@ Future<void> addCommande(BuildContext context, Commande commande) async {
       );
     } else {
       throw Exception("Failed to add product: ${response.body}");
+    }
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
+Future<void> addClient(BuildContext context, String id, String name,
+    String city, String phone, String adress) async {
+  final url =
+      Uri.parse("http://10.0.2.2:8081/clients"); // API URL for Android Emulator
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'idClient': id,
+        'nom': name,
+        'ville': city,
+        'adress': adress,
+        'telephone': phone,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+    } else {
+      throw Exception("Failed to add client: ${response.body}");
     }
   } catch (e) {
     print("Error: $e");
