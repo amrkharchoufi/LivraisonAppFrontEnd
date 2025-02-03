@@ -84,3 +84,40 @@ class CartManager extends ChangeNotifier {
     _items.clear();
   }
 }
+
+class Productcmd {
+  final String idProduit;
+  final String productName;
+  final double price;
+  final int quantity;
+  final String ImageUrl;
+
+  Productcmd({
+    required this.idProduit,
+    required this.productName,
+    required this.price,
+    required this.quantity,
+    required this.ImageUrl,
+  });
+
+  // Factory method to create a Product from JSON
+  factory Productcmd.fromJson(Map<String, dynamic> json) {
+    return Productcmd(
+      idProduit: json['idProduit'], // Map from 'idProduit'
+      productName: json['productName'], // Map from 'productName'
+      price: json['price'].toDouble(), // Ensure 'price' is a double
+      quantity: (json['quantity'] as num).toInt(),
+      ImageUrl: "asset/images/products/${json['idProduit']}.jpg",
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Product &&
+          runtimeType == other.runtimeType &&
+          idProduit == other.id;
+
+  @override
+  int get hashCode => idProduit.hashCode;
+}

@@ -233,10 +233,7 @@ Future<void> addCommande(BuildContext context, Commande commande) async {
       padding: EdgeInsets.all(16.0),
       child: Column(
         children: [
-          SizedBox(
-              width: 200,
-              height: 200,
-              child: Image.asset("asset/images/minilogo.png")),
+          Image.asset("asset/images/minilogo.png"),
           CircularProgressIndicator(),
           SizedBox(height: 16),
           Text('Making Order...'),
@@ -301,6 +298,20 @@ Future<void> addCommande(BuildContext context, Commande commande) async {
     }
   } catch (e) {
     print("Error: $e");
+  }
+}
+
+Future<List<Commande>> fetchCommandes() async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+  final url = Uri.parse("http://10.0.2.2:8082/commandes/clt/$userId");
+  final response = await http.get(url); // Now using http.get correctly
+  print(response.body);
+  if (response.statusCode == 200) {
+    List<dynamic> data = json.decode(response.body);
+    return data.map((item) => Commande.fromJson(item)).toList();
+  } else {
+    print("Failed to load commandes: ${response.statusCode}");
+    throw Exception("Failed to load commandes");
   }
 }
 

@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:foodie2/Login.dart';
 import 'package:foodie2/route.dart';
 import 'package:foodie2/firebase_options.dart';
 import 'package:foodie2/welcome.dart';
@@ -20,7 +19,7 @@ class Foodie extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: routes,
-      home: Login(),
+      home: Welcome(),
       debugShowCheckedModeBanner: false,
     );
   }
