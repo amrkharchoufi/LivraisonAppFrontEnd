@@ -1,6 +1,4 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -16,151 +14,56 @@ class OrderDetail extends StatefulWidget {
 }
 
 class _OrderDetailState extends State<OrderDetail> {
-  late WebViewController _webViewController;
-  late Future<Commande?> _commandeFuture;
-  late Future<String?> _mapLinkFuture;
-  bool _isLoading = true;
-  String? _errorMessage;
-  String? _currentUrl;
-
   String status(String st) {
+    String code = "";
     switch (st) {
       case "CommandeStatus.PENDING":
-        return "PENDING";
+        code = "PENDING";
+        break;
       case "CommandeStatus.PICKEDUP":
-        return "PICKEDUP";
+        code = "PICKEDUP";
+        break;
       case "CommandeStatus.ONTHEWAY":
-        return "ONTHEWAY";
+        code = "ONTHEWAY";
+        break;
       case "CommandeStatus.DELIVERED":
-        return "DELIVERED";
-      default:
-        return "UNKNOWN";
+        code = "DELIVERED";
+        break;
     }
+    return code;
   }
+
+  Future<Commande?>? _commandeFuture;
+  Future<String?>? _mapLinkFuture;
 
   @override
   void initState() {
     super.initState();
-    _initializeDependencies();
-  }
-
-  void _initializeDependencies() {
     _commandeFuture = fetchCommande(widget.cmdId);
     _mapLinkFuture = _getMapLink();
-    _initializeWebView();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _loadWebViewContent();
-    });
-  }
-
-  void _initializeWebView() {
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(onNavigationRequest: (request) {
-          if (request.url.startsWith('https://www.google.com/maps')) {
-            _launchExternalMap(request.url);
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        }, onWebResourceError: (error) {
-          if (error is WebResourceError &&
-              error.errorCode == -2 /* DNS resolution error */) {
-            setState(() {
-              _errorMessage = "Network error. Check your connection.";
-            });
-          }
-        }),
-      )
-      ..loadRequest(Uri.parse("about:blank")); // Initial empty load
-  }
-
-  Future<void> _loadWebViewContent() async {
-    try {
-      final link = await _mapLinkFuture;
-      if (link != null && Uri.parse(link).isAbsolute) {
-        if (_currentUrl != link) {
-          await _webViewController.loadRequest(Uri.parse(link));
-        }
-      } else {
-        setState(() => _errorMessage = "Invalid map coordinates");
-        await _webViewController.loadRequest(Uri.parse('about:blank'));
-      }
-    } catch (e) {
-      setState(() => _errorMessage = "Error loading map: ${e.toString()}");
-      await _webViewController.loadRequest(Uri.parse('about:blank'));
-    }
-  }
-
-  Future<void> _launchExternalMap(String url) async {
-    try {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    } catch (e) {
-      setState(() => _errorMessage = "Failed to open maps: ${e.toString()}");
-    }
   }
 
   Future<String?> _getMapLink() async {
-    try {
-      final data = await _commandeFuture;
-      if (data == null || data.livreur == null || data.clt == null) {
-        throw Exception('Invalid order data');
-      }
+    final data = await _commandeFuture;
+    if (data == null || data.livreur == null || data.clt == null) return null;
 
-      final livreurLat = data.livreur!.latitude;
-      final livreurLng = data.livreur!.longtitude;
-      final clientLat = data.clt!.latitude;
-      final clientLng = data.clt!.longtitude;
+    // Check for valid coordinates
+    final livreurLat = data.livreur!.latitude;
+    final livreurLng = data.livreur!.longtitude;
+    final clientLat = data.clt!.latitude;
+    final clientLng = data.clt!.longtitude;
 
-      if (livreurLat == null ||
-          livreurLng == null ||
-          clientLat == null ||
-          clientLng == null) {
-        throw Exception('Missing coordinates');
-      }
-
-      final link = await fetchmap(livreurLat, livreurLng, clientLat, clientLng);
-      if (kDebugMode) print('Map URL: $link');
-      return link;
-    } catch (e) {
-      if (kDebugMode) print('Map link error: $e');
+    if (livreurLat == null ||
+        livreurLng == null ||
+        clientLat == null ||
+        clientLng == null) {
+      print("Missing coordinates");
       return null;
     }
-  }
 
-  Widget _buildWebView() {
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 50),
-            const SizedBox(height: 20),
-            Text(_errorMessage!),
-            TextButton(
-              onPressed: _loadWebViewContent,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Stack(
-      children: [
-        WebViewWidget(
-          controller: _webViewController,
-          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-            Factory<VerticalDragGestureRecognizer>(
-              () => VerticalDragGestureRecognizer()
-                ..onDown = (DragDownDetails details) {},
-            ),
-          },
-        ),
-        if (_isLoading) const Center(child: CircularProgressIndicator()),
-      ],
-    );
+    final link = await fetchmap(livreurLat, livreurLng, clientLat, clientLng);
+    print("Generated Map URL: $link"); // Debug log
+    return link;
   }
 
   @override
@@ -173,131 +76,203 @@ class _OrderDetailState extends State<OrderDetail> {
         ),
         centerTitle: true,
         actions: [
-          Image.asset("asset/images/minilogobig.png", width: 40),
+          SizedBox(
+            child: Image.asset(
+              "asset/images/minilogobig.png",
+            ),
+          ),
         ],
       ),
-      body: FutureBuilder<List<Object?>>(
-        future: Future.wait<Object?>([_commandeFuture, _mapLinkFuture]),
+      body: FutureBuilder(
+        future: Future.wait([
+          _commandeFuture ?? Future.value(null),
+          _mapLinkFuture ?? Future.value(null)
+        ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Error loading data: ${snapshot.error}'));
           }
 
-          final data = snapshot.data?[0] as Commande?;
-          final link = snapshot.data?[1] as String?;
+          final data = snapshot.data![0] as Commande?;
+          final link = snapshot.data![1] as String?;
 
-          if (data == null) {
-            return const Center(child: Text('Order data not found'));
+          // Handle invalid data or link
+          if (data == null || link == null || !Uri.tryParse(link)!.isAbsolute) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.map, size: 50),
+                  SizedBox(height: 20),
+                  Text('Map unavailable. Check coordinates or connection.'),
+                ],
+              ),
+            );
           }
 
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _buildWebView(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _buildDeliveryInfo(data),
-              ],
-            ),
-          );
+          final controller = WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setNavigationDelegate(
+              NavigationDelegate(
+                onNavigationRequest: (request) {
+                  // Detect if the request is a Google Maps URL and open it outside the WebView
+                  if (request.url.startsWith('https://www.google.com/maps/')) {
+                    // Optionally, you can use url_launcher to open the map in an external browser
+                    launch(request.url).catchError((e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              "Failed to open maps. Check your connection."),
+                        ),
+                      );
+                    });
+                    return NavigationDecision.prevent;
+                  }
+                  return NavigationDecision.navigate;
+                },
+                onWebResourceError: (error) {
+                  print('WebView Error: ${error.description}');
+                },
+              ),
+            )
+            ..loadRequest(Uri.parse(link));
+
+          return _buildContent(data, controller);
         },
       ),
     );
   }
 
-  Widget _buildDeliveryInfo(Commande data) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 202, 24, 66),
-        borderRadius: BorderRadius.circular(15),
-      ),
+  Widget _buildContent(Commande data, WebViewController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundColor: Colors.white,
-                child: Icon(FontAwesomeIcons.user, color: Colors.black),
-              ),
-              Text(
-                data.livreur?.nom ?? 'Unknown Driver',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 25,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.call, color: Colors.white, size: 30),
-                onPressed: () {},
-              ),
-            ],
+          Container(
+            width: double.infinity,
+            height: 450,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: WebViewWidget(controller: controller),
           ),
-          const SizedBox(height: 20),
-          const Row(
-            children: [
-              Icon(FontAwesomeIcons.clock, color: Colors.white, size: 30),
-              SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "20-25 min",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 202, 24, 66),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                      child: Icon(
+                        FontAwesomeIcons.user,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                  Text(
-                    "Delivery time",
-                    style: TextStyle(color: Colors.white, fontSize: 13),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "Order Status: ${status(data.status.toString())}",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+                    Text(
+                      data.livreur!.nom,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.call,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      FontAwesomeIcons.clock,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "20-25 min",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                        ),
+                        const Text(
+                          "Delivery time",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 15),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Order status : ",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
               ),
-              onPressed: () {},
-              child: const Text(
-                "Download Invoice",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 202, 24, 66),
-                  fontSize: 18,
+              Text(
+                status(data.status.toString()),
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          PhysicalModel(
+            color: Colors.transparent,
+            elevation: 7,
+            shadowColor: Colors.black,
+            borderRadius: BorderRadius.circular(30),
+            child: SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    const Color.fromARGB(255, 220, 33, 78),
+                  ),
+                ),
+                child: const Text(
+                  "Download Invoice",
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
               ),
             ),

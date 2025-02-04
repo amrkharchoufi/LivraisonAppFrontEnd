@@ -19,7 +19,6 @@ class _WelcomeState extends State<Welcome> {
 
   Future<void> _verifyLocationAccess() async {
     try {
-      final position = await Geolocator.getCurrentPosition();
       // Location access granted, you can use position if needed
     } catch (e) {
       showDialog(
