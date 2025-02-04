@@ -1,7 +1,6 @@
 import 'package:foodie2/modele/Clientmodel.dart';
 import 'package:foodie2/modele/Livreur.dart';
 import 'package:foodie2/modele/product.dart';
-import 'package:http/http.dart';
 
 class Commande {
   final String idCmd;

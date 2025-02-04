@@ -1,10 +1,12 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foodie2/backend.dart';
 import 'package:foodie2/modele/commande.dart';
 import 'package:foodie2/modele/product.dart';
+import 'package:foodie2/orderdetail.dart';
 import 'package:foodie2/widget/productcard.dart';
 import 'package:provider/provider.dart';
 
@@ -181,12 +183,17 @@ class _ProductsState extends State<Products> {
             child: Image.asset("asset/images/minilogo.png")),
         centerTitle: true,
         actions: [
-          CircleAvatar(
-            radius: 35,
-            backgroundColor: Color.fromARGB(188, 202, 24, 66),
-            child: Icon(
-              FontAwesomeIcons.user,
-              color: Colors.white,
+          GestureDetector(
+            onTap: () {
+              FirebaseAuth.instance.signOut();
+            },
+            child: CircleAvatar(
+              radius: 35,
+              backgroundColor: Color.fromARGB(188, 202, 24, 66),
+              child: Icon(
+                FontAwesomeIcons.user,
+                color: Colors.white,
+              ),
             ),
           ),
           SizedBox(
@@ -728,7 +735,6 @@ class _DeliveryState extends State<Delivery> {
   void initState() {
     super.initState();
     futureCommandes = fetchCommandes();
-    print(futureCommandes.toString());
   }
 
   @override
@@ -779,7 +785,22 @@ class _DeliveryState extends State<Delivery> {
                       for (final commande in commandes)
                         FadeInRight(
                           duration: const Duration(milliseconds: 900),
-                          child: Text(commande.clt!.nom),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      OrderDetail(cmdId: commande.idCmd),
+                                ),
+                              );
+                            },
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Card(
+                                child: Text(commande.idCmd),
+                              ),
+                            ),
+                          ),
                         ),
                     ],
                   );

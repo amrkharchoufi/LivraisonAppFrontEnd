@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodie2/Client.dart';
 import 'package:foodie2/Livreur.dart';
+import 'package:foodie2/modele/Coordinate.dart';
 import 'package:foodie2/modele/commande.dart';
 import 'package:foodie2/modele/product.dart';
 import 'package:geolocator/geolocator.dart';
@@ -82,24 +83,33 @@ Future<void> login(BuildContext context, String email, String password) async {
 }
 
 void checklogin(BuildContext context) {
-  String user = FirebaseAuth.instance.currentUser!.uid;
-  if (user.isNotEmpty) {
-    FirebaseFirestore.instance
-        .collection('Users')
-        .doc(user)
-        .get()
-        .then((value) {
-      if (value.exists) {
-        final userData = value.data();
-        final String role = userData?['role'] ?? '';
-        if (role.isNotEmpty) {
-          _navigateBasedOnRole(context, role);
-        }
-      }
-    });
-  } else {
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
+  if (currentUser == null) {
     Navigator.of(context).pushNamed("/Login");
+    return;
   }
+
+  String userId = currentUser.uid;
+
+  FirebaseFirestore.instance
+      .collection('Users')
+      .doc(userId)
+      .get()
+      .then((value) {
+    if (value.exists) {
+      final userData = value.data();
+      final String role = userData?['role'] ?? '';
+
+      if (role.isNotEmpty) {
+        _navigateBasedOnRole(context, role);
+      }
+    } else {
+      Navigator.of(context).pushNamed("/Login");
+    }
+  }).catchError((error) {
+    Navigator.of(context).pushNamed("/Login");
+  });
 }
 
 Future<void> signUp(BuildContext context, String email, String password,
@@ -305,10 +315,21 @@ Future<List<Commande>> fetchCommandes() async {
   String userId = FirebaseAuth.instance.currentUser!.uid;
   final url = Uri.parse("http://10.0.2.2:8082/commandes/clt/$userId");
   final response = await http.get(url); // Now using http.get correctly
-  print(response.body);
   if (response.statusCode == 200) {
     List<dynamic> data = json.decode(response.body);
     return data.map((item) => Commande.fromJson(item)).toList();
+  } else {
+    print("Failed to load commandes: ${response.statusCode}");
+    throw Exception("Failed to load commandes");
+  }
+}
+
+Future<Commande> fetchCommande(String cmdId) async {
+  final url = Uri.parse("http://10.0.2.2:8082/commandes/$cmdId");
+  final response = await http.get(url); // Now using http.get correctly
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    return Commande.fromJson(data);
   } else {
     print("Failed to load commandes: ${response.statusCode}");
     throw Exception("Failed to load commandes");
@@ -411,4 +432,38 @@ Future<void> updateClientLocation(double long, double lat) async {
   } catch (e) {
     print("Error: $e");
   }
+}
+
+Future<String> fetchmap(
+    double latcl, double longcl, double latliv, double longliv) async {
+  String link = "";
+  final url = Uri.parse("http://10.0.2.2:8085/api/maps/url");
+
+  // Create a list of Coordinate objects
+  List<Coordinate> cord = [
+    Coordinate(latitude: latcl, longitude: longcl),
+    Coordinate(latitude: latliv, longitude: longliv)
+  ];
+
+  try {
+    // Send the POST request
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Encode the list of coordinates directly (without wrapping it in another object)
+      body: jsonEncode(cord.map((item) => item.toJson()).toList()),
+    );
+
+    // Check the response status code
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      link = response.body; // The response body should contain the URL
+    } else {
+      throw Exception("Failed to fetch map URL: ${response.body}");
+    }
+  } catch (e) {
+    print("Error: $e");
+  }
+  return link;
 }
