@@ -53,10 +53,7 @@ class _OrderDetailState extends State<OrderDetail> {
     final clientLat = data.clt!.latitude;
     final clientLng = data.clt!.longtitude;
 
-    if (livreurLat == null ||
-        livreurLng == null ||
-        clientLat == null ||
-        clientLng == null) {
+    if (livreurLng == null) {
       print("Missing coordinates");
       return null;
     }

@@ -793,6 +793,7 @@ class _DeliveryState extends State<Delivery> {
                                       OrderDetail(cmdId: commande.idCmd),
                                 ),
                               );
+                              
                             },
                             child: SizedBox(
                               width: double.infinity,
