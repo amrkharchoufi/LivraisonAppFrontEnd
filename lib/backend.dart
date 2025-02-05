@@ -467,3 +467,40 @@ Future<String> fetchmap(
   }
   return link;
 }
+
+Future<List<Commande>> fetchCommandesliv() async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+  final url = Uri.parse("http://10.0.2.2:8082/commandes/livr/$userId");
+  final response = await http.get(url); // Now using http.get correctly
+  if (response.statusCode == 200) {
+    List<dynamic> data = json.decode(response.body);
+    return data.map((item) => Commande.fromJson(item)).toList();
+  } else {
+    print("Failed to load commandes: ${response.statusCode}");
+    throw Exception("Failed to load commandes");
+  }
+}
+
+Future<void> updatecommandestatus(String id, CommandeStatus st) async {
+  final url = Uri.parse(
+      "http://10.0.2.2:8082/commandes/$id/status"); // API URL for Android Emulator
+
+  try {
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "status": st,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+    } else {
+      throw Exception("Failed to add client: ${response.body}");
+    }
+  } catch (e) {
+    print("Error: $e");
+  }
+}
